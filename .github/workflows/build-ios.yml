@@ -22,7 +22,7 @@ jobs:
 
       - name: Initialize Capacitor Project
         run: |
-          mkdir www
+          mkdir -p www
           cp index.html www/
           npx cap init "Vaultix Pro" "com.hoangvequoc.vaultixpro" --web-dir www
           npx cap add ios
@@ -31,25 +31,25 @@ jobs:
       - name: Build Xcode Project
         run: |
           cd ios/App
-          xcodebuild clean build \
-            -project App.xcodeproj \
+          xcodebuild build \
+            -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
-            -sdk iphoneos \
-            CODE_SIGN_IDENTITY="" \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_IDENTITY=""
 
       - name: Package Payload into IPA
         run: |
           cd ios/App
-          mkdir -p build/Payload
-          cp -r build/Release-iphoneos/App.app build/Payload/
-          cd build
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/App.app Payload/
           zip -r VaultixPro.ipa Payload
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: VaultixPro-IPA
-          path: ios/App/build/VaultixPro.ipa
+          path: ios/App/VaultixPro.ipa
